@@ -1,0 +1,77 @@
+# Production-optimized multi-stage build
+{%- if use_cuda %}
+# Stage 1: CUDA base with uv
+FROM nvidia/cuda:{{ cuda_version }}-runtime-ubuntu{{ ubuntu_version }} as uv-base
+
+# Install Python and minimal system dependencies
+RUN apt-get update && apt-get install -y \
+    python{{ python_version }} \
+    python{{ python_version }}-dev \
+    python{{ python_version }}-distutils \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Create symlinks for python
+RUN ln -sf /usr/bin/python{{ python_version }} /usr/bin/python3 && \
+    ln -sf /usr/bin/python3 /usr/bin/python
+
+# Install uv from official installer
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
+
+{%- else %}
+# Stage 1: Use official uv image for maximum efficiency
+FROM ghcr.io/astral-sh/uv:python{{ python_version }}-bookworm-slim as uv-base
+{%- endif %}
+
+# Configure uv for production
+ENV UV_COMPILE_BYTECODE=1
+ENV UV_LINK_MODE=copy
+ENV UV_CACHE_DIR=/opt/uv-cache
+
+# Stage 2: Dependencies installation
+FROM uv-base as deps
+
+WORKDIR /app
+
+# Copy dependency files
+COPY pyproject.toml ./
+
+# Install dependencies only (no project)
+RUN --mount=type=cache,target=/opt/uv-cache \
+    uv sync --no-install-project --no-dev
+
+# Stage 3: Production runtime
+FROM uv-base as production
+
+{%- if use_cuda %}
+# Set CUDA environment variables for runtime
+ENV CUDA_HOME=/usr/local/cuda
+ENV LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
+{%- endif %}
+
+# Create non-root user for security
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+WORKDIR /app
+
+# Copy virtual environment from deps stage
+COPY --from=deps --chown=appuser:appuser /app/.venv /app/.venv
+
+# Copy project source
+COPY --chown=appuser:appuser . .
+
+# Install project in non-editable mode
+RUN --mount=type=cache,target=/opt/uv-cache \
+    uv sync --no-dev --no-editable
+
+# Set environment variables
+ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Switch to non-root user
+USER appuser
+
+# Default command
+CMD ["python", "-m", "{{ project_name.replace('-', '_') }}.main"]

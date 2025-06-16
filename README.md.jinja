@@ -1,0 +1,213 @@
+# {{ project_name }}
+
+{{ project_description }}
+
+## Development Environment Setup
+
+This project provides a development environment using DevContainer.
+
+### Prerequisites
+
+- Docker
+- Visual Studio Code
+- Dev Containers extension
+{%- if use_cuda %}
+- NVIDIA Docker (nvidia-container-toolkit)
+- NVIDIA GPU drivers
+{%- endif %}
+
+### Starting the Development Environment
+
+{%- if use_cuda %}
+
+#### For CUDA Environment
+
+1. Verify that NVIDIA Docker is installed
+   ```bash
+   # Verify NVIDIA Docker installation
+   docker run --rm --gpus all nvidia/cuda:{{ cuda_version }}-base-ubuntu{{ ubuntu_version }} nvidia-smi
+   ```
+
+2. Open the project in VS Code
+3. Open the Command Palette (Ctrl+Shift+P / Cmd+Shift+P)
+4. Run "Dev Containers: Reopen in Container"
+
+Note: CUDA containers are large in size and may take time to build on the first run.
+
+{%- else %}
+
+1. Open the project in VS Code
+2. Open the Command Palette (Ctrl+Shift+P / Cmd+Shift+P)
+3. Run "Dev Containers: Reopen in Container"
+
+{%- endif %}
+
+### Dependency Management
+
+This project uses [uv](https://docs.astral.sh/uv/) to manage Python dependencies.
+
+```bash
+# Install dependencies
+uv sync
+
+# Add new package
+uv add package-name
+
+# Add development package
+uv add --dev package-name
+
+# Update dependencies
+uv lock --upgrade
+```
+
+### Docker Optimization
+
+This project's Docker setup is optimized following official uv recommendations:
+
+- **Multi-stage builds**: Separate dependencies and project code for improved cache efficiency
+{%- if not use_cuda %}
+- **Official uv image**: Uses `ghcr.io/astral-sh/uv:python{{ python_version }}-bookworm-slim`
+{%- endif %}
+- **Bytecode compilation**: `UV_COMPILE_BYTECODE=1` for faster startup
+- **Cache mounts**: `--mount=type=cache` for faster build times
+- **Layer optimization**: Fast rebuilds when dependencies change infrequently
+
+### Running the Application
+
+```bash
+# Run the main module
+uv run python -m {{ project_name.replace('-', '_') }}.main
+```
+
+{%- if include_pytest %}
+
+### Running Tests
+
+```bash
+# Run all tests
+uv run pytest
+
+# Run with coverage report
+uv run pytest --cov
+
+# Run specific test file
+uv run pytest tests/test_main.py
+```
+{%- endif %}
+
+{%- if include_ruff %}
+
+### Code Formatting and Linting
+
+```bash
+# Format code
+uv run ruff format
+
+# Run linting
+uv run ruff check
+
+# Auto-fix linting errors
+uv run ruff check --fix
+```
+{%- endif %}
+
+{%- if include_mypy %}
+
+### Type Checking
+
+```bash
+# Run type checking
+uv run mypy src
+```
+{%- endif %}
+
+{%- if use_cuda %}
+
+### CUDA/GPU Usage
+
+This project provides a CUDA-enabled development environment.
+
+#### Checking GPU Information
+
+```bash
+# Check GPU information
+nvidia-smi
+
+# Check GPU in Python (PyTorch example)
+python -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}'); print(f'GPU count: {torch.cuda.device_count()}')"
+```
+
+#### Recommended Additional Packages
+
+For machine learning/deep learning use cases, we recommend adding the following packages:
+
+```bash
+# PyTorch (CUDA version) - Index URL adjusted based on CUDA version
+{%- if cuda_version == "11.8" %}
+uv add torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+{%- elif cuda_version == "12.1" %}
+uv add torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+{%- else %}
+uv add torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+{%- endif %}
+
+# TensorFlow (GPU version)
+uv add tensorflow[and-cuda]
+
+# Other useful packages
+uv add numpy pandas matplotlib scikit-learn jupyter
+
+# CUDA-specific tools
+uv add cupy-cuda{{ cuda_version.replace('.', '') }}x  # CuPy for GPU-accelerated NumPy
+```
+{%- endif %}
+
+{%- if include_pre_commit %}
+
+### Pre-commit Hooks
+
+```bash
+# Install pre-commit hooks
+uv run pre-commit install
+
+# Run hooks on all files
+uv run pre-commit run --all-files
+```
+{%- endif %}
+
+### Production Deployment
+
+An optimized Dockerfile for production is also provided:
+
+```bash
+# Build production image
+docker build -f Dockerfile.production -t {{ project_name }}:production .
+
+# Run in production environment
+docker run -p 8000:8000 {{ project_name }}:production
+```
+
+## Project Structure
+
+```
+{{ project_name }}/
+├── .devcontainer/          # DevContainer configuration
+│   ├── devcontainer.json  # Dev Container settings
+│   └── Dockerfile         # Development Dockerfile
+├── src/
+│   └── {{ project_name.replace('-', '_') }}/   # Main source code
+├── tests/                  # Test files
+├── pyproject.toml         # Project configuration and uv dependencies
+├── uv.lock               # Dependency lock file
+├── Dockerfile.production  # Production-optimized Dockerfile
+├── .dockerignore          # Docker build context exclusions
+└── README.md             # This file
+```
+
+## License
+
+{%- if license != "None" %}
+This project is licensed under the {{ license }} License.
+{%- else %}
+No license has been set for this project.
+{%- endif %}
