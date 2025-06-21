@@ -27,7 +27,7 @@ pip install copier
 
 ```bash
 # Generate from remote repository
-copier copy https://github.com/your-username/dev-container-template my-awesome-project
+copier copy https://github.com/pkohei/dev-container-template my-awesome-project
 
 # Generate from local template
 copier copy . /path/to/new-project
