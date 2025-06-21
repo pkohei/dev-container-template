@@ -79,7 +79,6 @@ This project's Docker setup is optimized following official uv recommendations:
 uv run python -m {{ project_name.replace('-', '_') }}.main
 ```
 
-{%- if include_pytest %}
 
 ### Running Tests
 
@@ -93,9 +92,7 @@ uv run pytest --cov
 # Run specific test file
 uv run pytest tests/test_main.py
 ```
-{%- endif %}
 
-{%- if include_ruff %}
 
 ### Code Formatting and Linting
 
@@ -109,9 +106,7 @@ uv run ruff check
 # Auto-fix linting errors
 uv run ruff check --fix
 ```
-{%- endif %}
 
-{%- if include_mypy %}
 
 ### Type Checking
 
@@ -119,7 +114,6 @@ uv run ruff check --fix
 # Run type checking
 uv run mypy src
 ```
-{%- endif %}
 
 {%- if use_cuda %}
 
@@ -162,7 +156,6 @@ uv add cupy-cuda{{ cuda_version.replace('.', '') }}x  # CuPy for GPU-accelerated
 ```
 {%- endif %}
 
-{%- if include_pre_commit %}
 
 ### Pre-commit Hooks
 
@@ -173,7 +166,6 @@ uv run pre-commit install
 # Run hooks on all files
 uv run pre-commit run --all-files
 ```
-{%- endif %}
 
 ### Production Deployment
 

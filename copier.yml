@@ -67,26 +67,6 @@ base_image:
   default: "{% if use_cuda %}nvidia/cuda:{{ cuda_version }}-devel-ubuntu{{ ubuntu_version }}{% else %}python:{{ python_version }}-slim{% endif %}"
   when: false  # This is computed automatically based on use_cuda
 
-include_pytest:
-  type: bool
-  help: "Include pytest?"
-  default: true
-
-include_ruff:
-  type: bool
-  help: "Include Ruff (linter/formatter)?"
-  default: true
-
-include_mypy:
-  type: bool
-  help: "Include mypy (type checker)?"
-  default: true
-
-include_pre_commit:
-  type: bool
-  help: "Include pre-commit?"
-  default: true
-
 license:
   type: str
   help: "Select the license"
