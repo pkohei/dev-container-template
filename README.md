@@ -4,6 +4,8 @@ A comprehensive Copier template for creating Python development environments usi
 - **uv**: Modern Python package manager for fast dependency resolution and management
 - **Docker**: Containerized development environment
 - **Dev Containers**: VS Code integration for seamless container-based development
+- **Claude Code**: AI-powered code assistance integrated into the development environment
+- **GitHub CLI**: Seamless repository and collaboration management
 - **CUDA Support**: Optional GPU computing support for machine learning workloads
 
 ## Prerequisites
@@ -69,6 +71,12 @@ uv sync
 ### 3. Development Commands
 
 ```bash
+# AI-assisted development with Claude Code
+claude-code
+
+# Chat with Claude about your codebase
+claude-code chat
+
 # Run tests
 uv run pytest
 
@@ -104,9 +112,11 @@ my-awesome-project/
 ## Key Features
 
 - **Fast Setup**: One command to create a fully configured Python project
+- **AI-Assisted Development**: Claude Code CLI integration for intelligent code assistance
 - **Modern Tooling**: Uses uv for dependency management, ruff for code quality
 - **Container-Ready**: Includes Dev Container configuration for VS Code
 - **GPU Support**: Optional CUDA/GPU support for machine learning and scientific computing
+- **GitHub Integration**: GitHub CLI for seamless repository management
 - **Flexible**: Optional components based on project needs
 - **Type-Safe**: mypy configuration for type checking
 - **Testing**: pytest setup with coverage reporting
@@ -169,6 +179,19 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Clear cache
 uv cache clean
+```
+
+### Claude Code CLI Issues
+
+```bash
+# Check if Claude Code is available
+claude-code --version
+
+# Reinstall Claude Code CLI if needed
+curl -fsSL https://download.anthropic.com/claude-code/install.sh | sh
+
+# Get help with Claude Code commands
+claude-code --help
 ```
 
 ### Template Updates
