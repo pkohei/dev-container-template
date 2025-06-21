@@ -28,12 +28,8 @@ author_email:
 
 python_version:
   type: str
-  help: "Select the Python version to use"
+  help: "Enter the Python version for your project (e.g., 3.11, 3.12, 3.13)"
   default: "3.12"
-  choices:
-    - "3.11"
-    - "3.12"
-    - "3.13"
 
 use_cuda:
   type: bool
@@ -55,7 +51,7 @@ ubuntu_version:
 base_image:
   type: str
   help: "Select the base image"
-  default: "{% if use_cuda %}nvidia/cuda:{{ cuda_version }}-devel-ubuntu{{ ubuntu_version }}{% else %}python:{{ python_version }}-slim{% endif %}"
+  default: "{% if use_cuda %}nvidia/cuda:{{ cuda_version }}-devel-ubuntu{{ ubuntu_version }}{% else %}ghcr.io/astral-sh/uv:python3.12-bookworm-slim{% endif %}"
   when: false  # This is computed automatically based on use_cuda
 
 license:
