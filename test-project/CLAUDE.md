@@ -4,17 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Python project called "{{ project_name }}" that uses modern development practices:
+This is a Python project called "test-claude-code" that uses modern development practices:
 - **uv**: Modern Python package manager for fast dependency resolution and management
 - **Docker**: Containerized development environment
 - **Dev Containers**: VS Code integration for seamless container-based development
-{%- if use_cuda %}
-- **CUDA Support**: GPU computing support for machine learning workloads
-{%- endif %}
 
 ### Project Description
 
-{{ project_description }}
+Testing Claude Code CLI integration
 
 ## Development Environment
 
@@ -28,21 +25,6 @@ This project uses DevContainer for consistent development environment across mac
 4. Start coding!
 
 ## Development Commands
-
-### Claude Code CLI
-
-This project includes Claude Code CLI for AI-assisted development:
-
-```bash
-# Start Claude Code session
-claude-code
-
-# Chat with Claude about the codebase
-claude-code chat
-
-# Get help with Claude Code
-claude-code --help
-```
 
 ### Package Management
 
@@ -64,10 +46,8 @@ uv lock --upgrade
 
 ```bash
 # Run the main module
-uv run python -m {{ project_name.replace('-', '_') }}.main
+uv run python -m test_claude_code.main
 ```
-
-{%- if include_pytest %}
 
 ### Testing
 
@@ -81,9 +61,6 @@ uv run pytest --cov
 # Run specific test file
 uv run pytest tests/test_main.py
 ```
-{%- endif %}
-
-{%- if include_ruff %}
 
 ### Code Quality
 
@@ -97,9 +74,6 @@ uv run ruff check
 # Auto-fix linting errors
 uv run ruff check --fix
 ```
-{%- endif %}
-
-{%- if include_mypy %}
 
 ### Type Checking
 
@@ -107,9 +81,6 @@ uv run ruff check --fix
 # Run type checking
 uv run mypy src
 ```
-{%- endif %}
-
-{%- if include_pre_commit %}
 
 ### Pre-commit Hooks
 
@@ -120,11 +91,10 @@ uv run pre-commit install
 # Run hooks on all files
 uv run pre-commit run --all-files
 ```
-{%- endif %}
 
 ## Project Architecture
 
-- **Source code**: `src/{{ project_name.replace('-', '_') }}/` - Main application code
+- **Source code**: `src/test_claude_code/` - Main application code
 - **Tests**: `tests/` - Test files using pytest
 - **Configuration**: `pyproject.toml` - Project configuration and dependencies
 - **Dependencies**: `uv.lock` - Dependency lock file for reproducible builds
@@ -133,95 +103,34 @@ uv run pre-commit run --all-files
 
 ### Key Technologies
 
-- **Python {{ python_version }}**: Programming language
+- **Python 3.12**: Programming language
 - **uv**: Fast Python package manager
-{%- if include_pytest %}
 - **pytest**: Testing framework
-{%- endif %}
-{%- if include_ruff %}
 - **ruff**: Code formatter and linter
-{%- endif %}
-{%- if include_mypy %}
 - **mypy**: Static type checker
-{%- endif %}
-{%- if include_pre_commit %}
 - **pre-commit**: Git hooks for code quality
-{%- endif %}
-{%- if use_cuda %}
-- **CUDA {{ cuda_version }}**: GPU computing support
-{%- endif %}
 
 ## Development Guidelines
 
 ### Code Style
-
-{%- if include_ruff %}
 - Use `ruff format` for code formatting
 - Follow ruff linting rules (`ruff check`)
-{%- endif %}
-{%- if include_mypy %}
 - Add type hints to all functions and methods
 - Run `mypy` before committing changes
-{%- endif %}
 - Follow Python naming conventions (PEP 8)
 - Write docstrings for public functions and classes
 
 ### Testing
-
-{%- if include_pytest %}
 - Write tests for all new features
 - Maintain test coverage above 80%
 - Use descriptive test names
 - Follow AAA pattern (Arrange, Act, Assert)
-{%- endif %}
 
 ### Git Workflow
-
-{%- if include_pre_commit %}
 - Pre-commit hooks will run automatically before each commit
 - Fix any issues reported by pre-commit hooks
-{%- endif %}
 - Write clear, descriptive commit messages
 - Keep commits small and focused
-
-{%- if use_cuda %}
-
-## CUDA/GPU Development
-
-This project is configured for GPU computing with CUDA {{ cuda_version }}.
-
-### GPU Information
-
-```bash
-# Check GPU status
-nvidia-smi
-
-# Check CUDA in Python
-python -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}')"
-```
-
-### Recommended GPU Packages
-
-```bash
-# PyTorch for deep learning
-{%- if cuda_version == "11.8" %}
-uv add torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-{%- elif cuda_version == "12.1" %}
-uv add torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-{%- else %}
-uv add torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-{%- endif %}
-
-# TensorFlow for machine learning
-uv add tensorflow[and-cuda]
-
-# CuPy for GPU-accelerated NumPy
-uv add cupy-cuda{{ cuda_version.replace('.', '') }}x
-
-# Scientific computing
-uv add numpy pandas matplotlib scikit-learn
-```
-{%- endif %}
 
 ## Production Deployment
 
@@ -229,18 +138,16 @@ uv add numpy pandas matplotlib scikit-learn
 
 ```bash
 # Build optimized production image
-docker build -f Dockerfile.production -t {{ project_name }}:production .
+docker build -f Dockerfile.production -t test-claude-code:production .
 
 # Run production container
-docker run -p 8000:8000 {{ project_name }}:production
+docker run -p 8000:8000 test-claude-code:production
 ```
 
 ### Docker Optimization Features
 
 - Multi-stage builds for smaller image size
-{%- if not use_cuda %}
 - Official uv Docker images for efficiency
-{%- endif %}
 - Bytecode compilation for faster startup
 - Security-focused (non-root user)
 - Layer optimization for fast rebuilds
@@ -252,16 +159,9 @@ docker run -p 8000:8000 {{ project_name }}:production
 1. **Dependency conflicts**: Run `uv lock --upgrade` to resolve
 2. **Import errors**: Ensure you're in the correct virtual environment
 3. **Docker build issues**: Clear Docker cache with `docker system prune`
-{%- if use_cuda %}
-4. **GPU not detected**: Verify NVIDIA Docker installation
-5. **CUDA version mismatch**: Check host CUDA version compatibility
-{%- endif %}
 
 ### Getting Help
 
 - Check the project README.md for detailed setup instructions
 - Review uv documentation: https://docs.astral.sh/uv/
 - Dev Containers docs: https://containers.dev/
-{%- if use_cuda %}
-- NVIDIA Docker docs: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/
-{%- endif %}

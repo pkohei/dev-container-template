@@ -1,0 +1,49 @@
+# Production-optimized multi-stage build
+# Stage 1: Use official uv image for maximum efficiency
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim as uv-base
+
+# Configure uv for production
+ENV UV_COMPILE_BYTECODE=1
+ENV UV_LINK_MODE=copy
+ENV UV_CACHE_DIR=/opt/uv-cache
+
+# Stage 2: Dependencies installation
+FROM uv-base as deps
+
+WORKDIR /app
+
+# Copy dependency files
+COPY pyproject.toml ./
+
+# Install dependencies only (no project)
+RUN --mount=type=cache,target=/opt/uv-cache \
+    uv sync --no-install-project --no-dev
+
+# Stage 3: Production runtime
+FROM uv-base as production
+
+# Create non-root user for security
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+WORKDIR /app
+
+# Copy virtual environment from deps stage
+COPY --from=deps --chown=appuser:appuser /app/.venv /app/.venv
+
+# Copy project source
+COPY --chown=appuser:appuser . .
+
+# Install project in non-editable mode
+RUN --mount=type=cache,target=/opt/uv-cache \
+    uv sync --no-dev --no-editable
+
+# Set environment variables
+ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Switch to non-root user
+USER appuser
+
+# Default command
+CMD ["python", "-m", "test_claude_code.main"]

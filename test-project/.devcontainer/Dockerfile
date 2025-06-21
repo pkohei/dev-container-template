@@ -1,43 +1,6 @@
 # Multi-stage build for optimal caching and size
-{%- if use_cuda %}
-# Stage 1: CUDA base with uv
-FROM nvidia/cuda:{{ cuda_version }}-devel-ubuntu{{ ubuntu_version }} as cuda-uv-base
-
-# Install Python and system dependencies first
-RUN apt-get update && apt-get install -y \
-    python{{ python_version }} \
-    python{{ python_version }}-dev \
-    python{{ python_version }}-distutils \
-    python3-pip \
-    build-essential \
-    curl \
-    git \
-    sudo \
-    ca-certificates \
-    gpg \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install GitHub CLI
-RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
-    && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
-    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
-    && apt-get update \
-    && apt-get install -y gh \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install Claude Code CLI
-RUN curl -fsSL https://download.anthropic.com/claude-code/install.sh | sh
-
-# Create symlinks for python
-RUN ln -sf /usr/bin/python{{ python_version }} /usr/bin/python3 && \
-    ln -sf /usr/bin/python3 /usr/bin/python
-
-# Install uv from official installer for CUDA images
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
-
-{%- else %}
 # Stage 1: Use official uv image for maximum efficiency
-FROM ghcr.io/astral-sh/uv:python{{ python_version }}-bookworm-slim as slim-uv-base
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim as slim-uv-base
 
 # Install additional system dependencies first
 RUN apt-get update && apt-get install -y \
@@ -58,18 +21,10 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | d
 
 # Install Claude Code CLI
 RUN curl -fsSL https://download.anthropic.com/claude-code/install.sh | sh
-{%- endif %}
 
 # Create a non-root user
 RUN useradd -m -s /bin/bash vscode && \
     echo "vscode ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
-
-{%- if use_cuda %}
-# Set CUDA environment variables
-ENV CUDA_HOME=/usr/local/cuda
-ENV PATH=$CUDA_HOME/bin:$PATH
-ENV LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
-{%- endif %}
 
 # Configure uv environment variables for optimal Docker usage
 ENV UV_COMPILE_BYTECODE=1
@@ -94,11 +49,7 @@ ENV PYTHONUNBUFFERED=1
 ENV PATH="/workspace/.venv/bin:$PATH"
 
 # Stage 2: Development stage with dependencies
-{%- if use_cuda %}
-FROM cuda-uv-base as development
-{%- else %}
 FROM slim-uv-base as development
-{%- endif %}
 
 # Copy project configuration files for dependency resolution
 COPY --chown=vscode:vscode pyproject.toml ./
