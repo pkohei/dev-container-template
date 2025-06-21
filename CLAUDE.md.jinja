@@ -29,6 +29,21 @@ This project uses DevContainer for consistent development environment across mac
 
 ## Development Commands
 
+### Claude Code CLI
+
+This project includes Claude Code CLI for AI-assisted development:
+
+```bash
+# Start Claude Code session
+claude
+
+# Get help with Claude Code
+claude --help
+
+# Initialize Claude Code project guide (optional)
+claude /init
+```
+
 ### Package Management
 
 ```bash
@@ -52,7 +67,6 @@ uv lock --upgrade
 uv run python -m {{ project_name.replace('-', '_') }}.main
 ```
 
-{%- if include_pytest %}
 
 ### Testing
 
@@ -66,9 +80,7 @@ uv run pytest --cov
 # Run specific test file
 uv run pytest tests/test_main.py
 ```
-{%- endif %}
 
-{%- if include_ruff %}
 
 ### Code Quality
 
@@ -82,9 +94,7 @@ uv run ruff check
 # Auto-fix linting errors
 uv run ruff check --fix
 ```
-{%- endif %}
 
-{%- if include_mypy %}
 
 ### Type Checking
 
@@ -92,9 +102,7 @@ uv run ruff check --fix
 # Run type checking
 uv run mypy src
 ```
-{%- endif %}
 
-{%- if include_pre_commit %}
 
 ### Pre-commit Hooks
 
@@ -105,7 +113,6 @@ uv run pre-commit install
 # Run hooks on all files
 uv run pre-commit run --all-files
 ```
-{%- endif %}
 
 ## Project Architecture
 
@@ -120,18 +127,10 @@ uv run pre-commit run --all-files
 
 - **Python {{ python_version }}**: Programming language
 - **uv**: Fast Python package manager
-{%- if include_pytest %}
 - **pytest**: Testing framework
-{%- endif %}
-{%- if include_ruff %}
 - **ruff**: Code formatter and linter
-{%- endif %}
-{%- if include_mypy %}
 - **mypy**: Static type checker
-{%- endif %}
-{%- if include_pre_commit %}
 - **pre-commit**: Git hooks for code quality
-{%- endif %}
 {%- if use_cuda %}
 - **CUDA {{ cuda_version }}**: GPU computing support
 {%- endif %}
@@ -140,32 +139,24 @@ uv run pre-commit run --all-files
 
 ### Code Style
 
-{%- if include_ruff %}
 - Use `ruff format` for code formatting
 - Follow ruff linting rules (`ruff check`)
-{%- endif %}
-{%- if include_mypy %}
 - Add type hints to all functions and methods
 - Run `mypy` before committing changes
-{%- endif %}
 - Follow Python naming conventions (PEP 8)
 - Write docstrings for public functions and classes
 
 ### Testing
 
-{%- if include_pytest %}
 - Write tests for all new features
 - Maintain test coverage above 80%
 - Use descriptive test names
 - Follow AAA pattern (Arrange, Act, Assert)
-{%- endif %}
 
 ### Git Workflow
 
-{%- if include_pre_commit %}
 - Pre-commit hooks will run automatically before each commit
 - Fix any issues reported by pre-commit hooks
-{%- endif %}
 - Write clear, descriptive commit messages
 - Keep commits small and focused
 

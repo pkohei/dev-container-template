@@ -1,9 +1,9 @@
 # Multi-stage build for optimal caching and size
 {%- if use_cuda %}
 # Stage 1: CUDA base with uv
-FROM nvidia/cuda:{{ cuda_version }}-devel-ubuntu{{ ubuntu_version }} as uv-base
+FROM nvidia/cuda:{{ cuda_version }}-devel-ubuntu{{ ubuntu_version }} as cuda-uv-base
 
-# Install Python and system dependencies
+# Install Python and system dependencies first
 RUN apt-get update && apt-get install -y \
     python{{ python_version }} \
     python{{ python_version }}-dev \
@@ -14,27 +14,58 @@ RUN apt-get update && apt-get install -y \
     git \
     sudo \
     ca-certificates \
+    gpg \
     && rm -rf /var/lib/apt/lists/*
+
+# Install GitHub CLI
+RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+    && apt-get update \
+    && apt-get install -y gh \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js 18+ for Claude Code CLI
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs
+
+# Install Claude Code CLI
+RUN npm install -g @anthropic-ai/claude-code
 
 # Create symlinks for python
 RUN ln -sf /usr/bin/python{{ python_version }} /usr/bin/python3 && \
     ln -sf /usr/bin/python3 /usr/bin/python
 
+# Install uv from official installer for CUDA images
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
+
 {%- else %}
 # Stage 1: Use official uv image for maximum efficiency
-FROM ghcr.io/astral-sh/uv:python{{ python_version }}-bookworm-slim as uv-base
+FROM ghcr.io/astral-sh/uv:python{{ python_version }}-bookworm-slim as slim-uv-base
 
-# Install additional system dependencies
+# Install additional system dependencies first
 RUN apt-get update && apt-get install -y \
     git \
     sudo \
     ca-certificates \
+    curl \
+    gpg \
     && rm -rf /var/lib/apt/lists/*
-{%- endif %}
 
-{%- if use_cuda %}
-# Install uv from official installer for CUDA images
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
+# Install GitHub CLI
+RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+    && apt-get update \
+    && apt-get install -y gh \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js 18+ for Claude Code CLI
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs
+
+# Install Claude Code CLI
+RUN npm install -g @anthropic-ai/claude-code
 {%- endif %}
 
 # Create a non-root user
@@ -71,7 +102,11 @@ ENV PYTHONUNBUFFERED=1
 ENV PATH="/workspace/.venv/bin:$PATH"
 
 # Stage 2: Development stage with dependencies
-FROM uv-base as development
+{%- if use_cuda %}
+FROM cuda-uv-base as development
+{%- else %}
+FROM slim-uv-base as development
+{%- endif %}
 
 # Copy project configuration files for dependency resolution
 COPY --chown=vscode:vscode pyproject.toml ./

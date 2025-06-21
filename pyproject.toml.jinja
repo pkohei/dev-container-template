@@ -11,27 +11,17 @@ dependencies = []
 
 [project.optional-dependencies]
 dev = [
-    {%- if include_pytest %}
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
-    {%- endif %}
-    {%- if include_ruff %}
     "ruff>=0.1.0",
-    {%- endif %}
-    {%- if include_mypy %}
     "mypy>=1.7.0",
-    {%- endif %}
-    {%- if include_pre_commit %}
     "pre-commit>=3.5.0",
-    {%- endif %}
 ]
 
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-
-{%- if include_ruff %}
 
 [tool.ruff]
 line-length = 88
@@ -54,18 +44,12 @@ quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
-{%- endif %}
-
-{%- if include_mypy %}
 
 [tool.mypy]
 python_version = "{{ python_version }}"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
-{%- endif %}
-
-{%- if include_pytest %}
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -73,4 +57,3 @@ python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = "--cov={{ project_name.replace('-', '_') }} --cov-report=term-missing --cov-report=html"
-{%- endif %}
