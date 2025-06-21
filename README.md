@@ -72,10 +72,7 @@ uv sync
 
 ```bash
 # AI-assisted development with Claude Code
-claude-code
-
-# Chat with Claude about your codebase
-claude-code chat
+claude
 
 # Run tests
 uv run pytest
@@ -185,13 +182,16 @@ uv cache clean
 
 ```bash
 # Check if Claude Code is available
-claude-code --version
+claude --version
+
+# Check Node.js version (required: 18+)
+node --version
 
 # Reinstall Claude Code CLI if needed
-curl -fsSL https://download.anthropic.com/claude-code/install.sh | sh
+npm install -g @anthropic-ai/claude-code
 
 # Get help with Claude Code commands
-claude-code --help
+claude --help
 ```
 
 ### Template Updates

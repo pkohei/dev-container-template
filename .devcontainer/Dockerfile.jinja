@@ -25,8 +25,12 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | d
     && apt-get install -y gh \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Node.js 18+ for Claude Code CLI
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs
+
 # Install Claude Code CLI
-RUN curl -fsSL https://download.anthropic.com/claude-code/install.sh | sh
+RUN npm install -g @anthropic-ai/claude-code
 
 # Create symlinks for python
 RUN ln -sf /usr/bin/python{{ python_version }} /usr/bin/python3 && \
@@ -56,8 +60,12 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | d
     && apt-get install -y gh \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Node.js 18+ for Claude Code CLI
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs
+
 # Install Claude Code CLI
-RUN curl -fsSL https://download.anthropic.com/claude-code/install.sh | sh
+RUN npm install -g @anthropic-ai/claude-code
 {%- endif %}
 
 # Create a non-root user
