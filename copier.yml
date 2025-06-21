@@ -42,23 +42,14 @@ use_cuda:
 
 cuda_version:
   type: str
-  help: "Select the CUDA version"
+  help: "Enter the CUDA version (e.g., 12.2, 11.8, 12.4)"
   default: "12.2"
-  choices:
-    - "11.8"
-    - "12.1"
-    - "12.2"
-    - "12.3"
-    - "12.4"
   when: "{{ use_cuda }}"
 
 ubuntu_version:
   type: str
-  help: "Select the Ubuntu version (when using CUDA)"
+  help: "Enter the Ubuntu version for CUDA base image (e.g., 22.04, 20.04)"
   default: "22.04"
-  choices:
-    - "20.04"
-    - "22.04"
   when: "{{ use_cuda }}"
 
 base_image:

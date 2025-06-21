@@ -43,12 +43,8 @@ When running the template, you'll be prompted with the following questions:
 - **Author email address**: Your email address
 - **Python version**: The Python version to use (choose from 3.11, 3.12, 3.13)
 - **Enable CUDA (GPU) support**: Set to true for machine learning or GPU computing
-- **CUDA version**: The CUDA version to use (choose from 11.8, 12.1, 12.2, 12.3, 12.4)
-- **Ubuntu version**: Base Ubuntu version when using CUDA (choose from 20.04, 22.04)
-- **Include pytest**: Set to true to use the testing framework (recommended)
-- **Include Ruff**: Set to true to use code formatter and linter (recommended)
-- **Include mypy**: Set to true to use type checker (recommended)
-- **Include pre-commit**: Set to true to use Git hooks (recommended)
+- **CUDA version**: Enter the CUDA version (e.g., 12.2, 11.8, 12.4). Check [NVIDIA CUDA Docker images](https://hub.docker.com/r/nvidia/cuda/tags) for available versions
+- **Ubuntu version**: Enter the Ubuntu version for CUDA base image (e.g., 22.04, 20.04)
 - **License**: The project license
 
 ## Using the Generated Project
@@ -160,6 +156,8 @@ When CUDA support is enabled:
 
 For CUDA-enabled projects:
 
+- **Check available CUDA images**: Visit [NVIDIA CUDA Docker Hub](https://hub.docker.com/r/nvidia/cuda/tags) to find available CUDA and Ubuntu version combinations
+- **Image not found error**: Verify your CUDA and Ubuntu version combination exists on Docker Hub
 - Verify that NVIDIA Docker is installed
   ```bash
   # Installation verification (adjust for your CUDA and Ubuntu versions)
@@ -167,6 +165,11 @@ For CUDA-enabled projects:
   ```
 - Ensure NVIDIA GPU drivers are installed on the host system
 - CUDA containers take time to build initially (several GB download)
+
+**Finding the right CUDA image**:
+1. Visit https://hub.docker.com/r/nvidia/cuda/tags
+2. Search for `{cuda_version}-devel-ubuntu{ubuntu_version}` (e.g., `12.2-devel-ubuntu22.04`)
+3. Use the exact version found in the search results
 
 ### uv-related Issues
 
