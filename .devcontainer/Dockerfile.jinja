@@ -3,7 +3,7 @@
 # Stage 1: CUDA base with uv
 FROM nvidia/cuda:{{ cuda_version }}-devel-ubuntu{{ ubuntu_version }} as uv-base
 
-# Install Python and system dependencies
+# Install Python and system dependencies including GitHub CLI
 RUN apt-get update && apt-get install -y \
     python{{ python_version }} \
     python{{ python_version }}-dev \
@@ -14,6 +14,12 @@ RUN apt-get update && apt-get install -y \
     git \
     sudo \
     ca-certificates \
+    gpg \
+    && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+    && apt-get update \
+    && apt-get install -y gh \
     && rm -rf /var/lib/apt/lists/*
 
 # Create symlinks for python
@@ -24,11 +30,18 @@ RUN ln -sf /usr/bin/python{{ python_version }} /usr/bin/python3 && \
 # Stage 1: Use official uv image for maximum efficiency
 FROM ghcr.io/astral-sh/uv:python{{ python_version }}-bookworm-slim as uv-base
 
-# Install additional system dependencies
+# Install additional system dependencies including GitHub CLI
 RUN apt-get update && apt-get install -y \
     git \
     sudo \
     ca-certificates \
+    curl \
+    gpg \
+    && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+    && apt-get update \
+    && apt-get install -y gh \
     && rm -rf /var/lib/apt/lists/*
 {%- endif %}
 
