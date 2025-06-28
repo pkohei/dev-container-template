@@ -1,67 +1,84 @@
 #!/bin/bash
-# SSH Agent Setup and Verification Script for {{ project_name }}
-# This script helps verify SSH agent forwarding is working correctly
-
 set -e
 
-echo "🔐 SSH Agent Setup and Verification"
-echo "=================================="
+echo "🔑 Setting up SSH configuration..."
 
-# Check if SSH agent is available
-if [ -z "$SSH_AUTH_SOCK" ]; then
-    echo "❌ SSH_AUTH_SOCK is not set"
-    echo "   SSH agent forwarding may not be configured properly"
-    echo "   Please ensure:"
-    echo "   1. SSH agent is running on your host machine"
-    echo "   2. You have SSH keys loaded in your agent"
-    echo "   3. The devcontainer is properly configured"
-    exit 1
-fi
-
-echo "✅ SSH_AUTH_SOCK is set: $SSH_AUTH_SOCK"
-
-# Check if SSH agent socket is accessible
-if [ ! -S "$SSH_AUTH_SOCK" ]; then
-    echo "❌ SSH agent socket is not accessible"
-    echo "   Socket path: $SSH_AUTH_SOCK"
-    echo "   This usually means SSH agent forwarding is not working"
-    exit 1
-fi
-
-echo "✅ SSH agent socket is accessible"
-
-# List available SSH keys
-echo ""
-echo "📋 Available SSH keys:"
-if ssh-add -l > /dev/null 2>&1; then
-    ssh-add -l
-    echo ""
-    echo "✅ SSH keys are loaded and available"
-else
-    echo "❌ No SSH keys are loaded in the agent"
-    echo "   Please add keys to your SSH agent on the host:"
-    echo "   ssh-add ~/.ssh/id_rsa  # or your key file"
-    exit 1
-fi
-
-# Test SSH connection (optional)
-echo ""
-read -p "🌐 Would you like to test SSH connection to GitHub? (y/N): " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    echo "Testing SSH connection to GitHub..."
-    if ssh -T git@github.com 2>&1 | grep -q "successfully authenticated"; then
-        echo "✅ SSH connection to GitHub is working!"
+# Check if SSH_AUTH_SOCK is available
+if [ -n "$SSH_AUTH_SOCK" ]; then
+    echo "✅ SSH agent socket found: $SSH_AUTH_SOCK"
+    
+    # Test SSH agent connection
+    if ssh-add -l >/dev/null 2>&1; then
+        echo "✅ SSH agent is working and has keys loaded"
+        ssh-add -l
     else
-        echo "⚠️  SSH connection test failed or you don't have GitHub access"
-        echo "   This might be normal if you don't have GitHub SSH access configured"
+        echo "⚠️  SSH agent is available but no keys are loaded"
+        echo "   Please add your SSH keys to the agent on the host machine:"
+        echo "   ssh-add ~/.ssh/your_private_key"
     fi
+else
+    echo "⚠️  SSH_AUTH_SOCK not found"
+    echo "   SSH agent forwarding may not be configured properly"
+    echo "   Make sure you have:"
+    echo "   1. SSH agent running on your host"
+    echo "   2. Keys added to the agent (ssh-add)"
+    echo "   3. VS Code configured with proper SSH settings"
 fi
 
-echo ""
-echo "🎉 SSH agent forwarding setup verification complete!"
-echo ""
-echo "💡 Tips:"
-echo "   - You can now use git with SSH URLs: git clone git@github.com:user/repo.git"
-echo "   - SSH keys from your host are automatically available"
-echo "   - No need to copy private keys into the container"
+# Ensure SSH directory exists and has proper permissions
+mkdir -p ~/.ssh
+chmod 700 ~/.ssh
+
+# Create or update SSH config for GitHub and common Git hosts
+SSH_CONFIG=~/.ssh/config
+if [ ! -f "$SSH_CONFIG" ]; then
+    cat > "$SSH_CONFIG" << 'EOF'
+# GitHub
+Host github.com
+    HostName github.com
+    User git
+    IdentitiesOnly yes
+    PreferredAuthentications publickey
+
+# GitLab
+Host gitlab.com
+    HostName gitlab.com
+    User git
+    IdentitiesOnly yes
+    PreferredAuthentications publickey
+
+# Bitbucket
+Host bitbucket.org
+    HostName bitbucket.org
+    User git
+    IdentitiesOnly yes
+    PreferredAuthentications publickey
+EOF
+    echo "✅ Created SSH config file with common Git hosts"
+else
+    echo "✅ SSH config file already exists"
+fi
+
+chmod 600 "$SSH_CONFIG"
+
+# Configure Git if not already configured
+if ! git config --global user.name >/dev/null 2>&1; then
+    echo "⚠️  Git user.name not configured"
+    echo "   You may want to set it with: git config --global user.name 'Your Name'"
+fi
+
+if ! git config --global user.email >/dev/null 2>&1; then
+    echo "⚠️  Git user.email not configured"
+    echo "   You may want to set it with: git config --global user.email 'your.email@example.com'"
+fi
+
+# Test SSH connection to GitHub (optional)
+echo "🔍 Testing SSH connection to GitHub..."
+if ssh -T git@github.com -o ConnectTimeout=10 -o StrictHostKeyChecking=no 2>&1 | grep -q "successfully authenticated"; then
+    echo "✅ SSH connection to GitHub is working!"
+else
+    echo "⚠️  Could not establish SSH connection to GitHub"
+    echo "   This might be normal if you haven't added your public key to GitHub yet"
+fi
+
+echo "🎉 SSH setup completed!"
