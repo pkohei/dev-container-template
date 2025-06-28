@@ -31,8 +31,10 @@ services:
       - ./src:/app/src:ro
     working_dir: /app
     command: uv run python -m {{ project_name.replace('-', '_') }}.main
-    user: vscode
+    user: appuser
     restart: unless-stopped
+    profiles:
+      - production
 
 volumes:
   uv-cache:
