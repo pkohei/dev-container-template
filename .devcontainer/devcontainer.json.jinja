@@ -1,10 +1,7 @@
 {
   "name": "{{ project_name }} Development Environment",
-  "build": {
-    "dockerfile": "Dockerfile",
-    "context": "..",
-    "target": "development"
-  },
+  "dockerComposeFile": "../compose.yml",
+  "service": "dev",
   {%- if use_cuda %}
   "runArgs": [
     "--gpus=all"
@@ -55,11 +52,10 @@
     }
   },
   "forwardPorts": [],
-  "postCreateCommand": "echo 'Development environment ready! Run: uv sync' && if [ -f .devcontainer/ssh-setup.sh ]; then chmod +x .devcontainer/ssh-setup.sh && echo '🔐 SSH client available. Run .devcontainer/ssh-setup.sh to verify SSH agent forwarding.'; fi",
+  "postCreateCommand": "sudo chown -R vscode:vscode /home/vscode/.claude && echo 'Development environment ready! Run: uv sync' && if [ -f .devcontainer/ssh-setup.sh ]; then chmod +x .devcontainer/ssh-setup.sh && echo '🔐 SSH client available. Run .devcontainer/ssh-setup.sh to verify SSH agent forwarding.'; fi && echo '💾 Claude Code conversation history will be preserved across container rebuilds.'",
   "remoteUser": "vscode",
   "workspaceFolder": "/workspace",
   "mounts": [
-    "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
     "source=${localEnv:SSH_AUTH_SOCK},target=/tmp/ssh-agent.sock,type=bind"
   ],
   "remoteEnv": {
