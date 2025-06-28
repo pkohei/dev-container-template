@@ -145,14 +145,7 @@ RUN uv sync --no-install-project && \
 COPY --chown=vscode:vscode . ./
 
 # Install project in development mode with all dev dependencies
-RUN if [ -f "README.md" ]; then \
-        uv sync; \
-    else \
-        echo "README.md not found, skipping project installation"; \
-        touch README.md; \
-        uv sync; \
-        rm README.md; \
-    fi && \
+RUN uv sync && \
     chown -R vscode:vscode .venv uv.lock 2>/dev/null || true
 
 # Switch back to vscode user
