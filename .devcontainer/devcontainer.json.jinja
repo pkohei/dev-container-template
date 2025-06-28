@@ -1,23 +1,22 @@
 {
-  "name": "{{ project_name }}",
+  "name": "{{ project_name }} Development Environment",
   "build": {
     "dockerfile": "Dockerfile",
-    "args": {
-      "PYTHON_VERSION": "{{ python_version }}",
-      "NODEJS_VERSION": "{{ nodejs_version }}"
-    }
+    "context": "..",
+    "target": "development"
   },
+  {%- if use_cuda %}
+  "runArgs": [
+    "--gpus=all"
+  ],
+  "hostRequirements": {
+    "gpu": true
+  },
+  {%- endif %}
   "features": {
     "ghcr.io/devcontainers/features/git:1": {},
-    "ghcr.io/devcontainers/features/github-cli:1": {},
-    "ghcr.io/devcontainers/features/node:1": {
-      "version": "{{ nodejs_version if nodejs_version != 'latest' else 'lts' }}"
-    }
+    "ghcr.io/devcontainers/features/github-cli:1": {}
   },
-  "remoteEnv": {
-    "SSH_AUTH_SOCK": "${localEnv:SSH_AUTH_SOCK}"
-  },
-  "postCreateCommand": "bash .devcontainer/ssh-setup.sh",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -25,26 +24,44 @@
         "ms-python.black-formatter",
         "charliermarsh.ruff",
         "ms-python.mypy-type-checker",
-        "ms-vscode.vscode-json"
+        "ms-vscode.vscode-json",
+        "redhat.vscode-yaml",
+        "ms-vscode.docker",
+        "ms-azuretools.vscode-docker"
       ],
       "settings": {
         "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.terminal.activateEnvironment": true,
+        {%- if include_ruff %}
+        "python.formatting.provider": "none",
+        "[python]": {
+          "editor.formatOnSave": true,
+          "editor.codeActionsOnSave": {
+            "source.fixAll": "explicit",
+            "source.organizeImports": "explicit"
+          },
+          "editor.defaultFormatter": "charliermarsh.ruff"
+        },
+        {%- endif %}
+        {%- if include_mypy %}
         "python.linting.enabled": true,
-        "python.linting.pylintEnabled": false,
         "python.linting.mypyEnabled": true,
-        "python.formatting.provider": "black",
-        "editor.formatOnSave": true,
-        "editor.codeActionsOnSave": {
-          "source.organizeImports": "explicit"
+        {%- endif %}
+        "files.associations": {
+          "*.yml": "yaml",
+          "*.yaml": "yaml"
         }
       }
     }
   },
-  "forwardPorts": [8000],
-  "portsAttributes": {
-    "8000": {
-      "label": "Application",
-      "onAutoForward": "notify"
-    }
+  "forwardPorts": [],
+  "postCreateCommand": "echo 'Development environment ready! Run: uv sync' && if [ -f .devcontainer/ssh-setup.sh ]; then chmod +x .devcontainer/ssh-setup.sh && echo '🔐 SSH client available. Run .devcontainer/ssh-setup.sh to verify SSH agent forwarding.'; fi",
+  "remoteUser": "vscode",
+  "workspaceFolder": "/workspace",
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"
+  ],
+  "remoteEnv": {
+    "SSH_AUTH_SOCK": "${localEnv:SSH_AUTH_SOCK}"
   }
 }
