@@ -31,6 +31,11 @@ python_version:
   help: "Enter the Python version for your project (e.g., 3.11, 3.12, 3.13)"
   default: "3.12"
 
+nodejs_version:
+  type: str
+  help: "Enter the Node.js version for development environment (e.g., 18, 20, 22, or 'latest' for auto-detection)"
+  default: "latest"
+
 use_cuda:
   type: bool
   help: "Enable CUDA (GPU) support?"
