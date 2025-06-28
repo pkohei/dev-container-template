@@ -29,21 +29,6 @@ This project uses DevContainer for consistent development environment across mac
 
 ## Development Commands
 
-### Claude Code CLI
-
-This project includes Claude Code CLI for AI-assisted development:
-
-```bash
-# Start Claude Code session
-claude
-
-# Get help with Claude Code
-claude --help
-
-# Initialize Claude Code project guide (optional)
-claude /init
-```
-
 ### Package Management
 
 ```bash
@@ -60,12 +45,7 @@ uv add --dev package-name
 uv lock --upgrade
 ```
 
-### Running the Application
-
-```bash
-# Run the main module
-uv run python -m {{ project_name.replace('-', '_') }}.main
-```
+When installing dependencies, use `uv add` instead of editing pyproject.toml directly. pyproject.toml will be automatically updated.
 
 
 ### Testing
@@ -137,6 +117,19 @@ uv run pre-commit run --all-files
 
 ## Development Guidelines
 
+### Development workflow
+
+**Follow this workflow for development unless otherwise specified by the user**
+
+1. Create and present a development plan before starting work
+2. Create a GitHub issue once the development plan is approved by the user
+3. Before starting development, checkout the default branch, run `git pull` to get the latest commits from remote repository, and create a new branch from that commit
+4. Start development on the branch created in step 3 according to the issue
+5. Make commits and pushes with appropriate granularity during development
+6. Create a PR after development is complete
+7. Address review feedback and make necessary modifications if reviews are received
+8. After PR is approved and merged, delete the branch, checkout the default branch, and run `git pull` to get the latest commits
+
 ### Code Style
 
 - Use `ruff format` for code formatting
@@ -153,13 +146,6 @@ uv run pre-commit run --all-files
 - Use descriptive test names
 - Follow AAA pattern (Arrange, Act, Assert)
 
-### Git Workflow
-
-- Pre-commit hooks will run automatically before each commit
-- Fix any issues reported by pre-commit hooks
-- Write clear, descriptive commit messages
-- Keep commits small and focused
-
 {%- if use_cuda %}
 
 ## CUDA/GPU Development
@@ -171,55 +157,9 @@ This project is configured for GPU computing with CUDA {{ cuda_version }}.
 ```bash
 # Check GPU status
 nvidia-smi
-
-# Check CUDA in Python
-python -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}')"
 ```
 
-### Recommended GPU Packages
-
-```bash
-# PyTorch for deep learning
-{%- if cuda_version == "11.8" %}
-uv add torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-{%- elif cuda_version == "12.1" %}
-uv add torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-{%- else %}
-uv add torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 {%- endif %}
-
-# TensorFlow for machine learning
-uv add tensorflow[and-cuda]
-
-# CuPy for GPU-accelerated NumPy
-uv add cupy-cuda{{ cuda_version.replace('.', '') }}x
-
-# Scientific computing
-uv add numpy pandas matplotlib scikit-learn
-```
-{%- endif %}
-
-## Production Deployment
-
-### Building Production Image
-
-```bash
-# Build optimized production image
-docker build -f Dockerfile.production -t {{ project_name }}:production .
-
-# Run production container
-docker run -p 8000:8000 {{ project_name }}:production
-```
-
-### Docker Optimization Features
-
-- Multi-stage builds for smaller image size
-{%- if not use_cuda %}
-- Official uv Docker images for efficiency
-{%- endif %}
-- Bytecode compilation for faster startup
-- Security-focused (non-root user)
-- Layer optimization for fast rebuilds
 
 ## Troubleshooting
 
@@ -227,17 +167,10 @@ docker run -p 8000:8000 {{ project_name }}:production
 
 1. **Dependency conflicts**: Run `uv lock --upgrade` to resolve
 2. **Import errors**: Ensure you're in the correct virtual environment
-3. **Docker build issues**: Clear Docker cache with `docker system prune`
 {%- if use_cuda %}
-4. **GPU not detected**: Verify NVIDIA Docker installation
-5. **CUDA version mismatch**: Check host CUDA version compatibility
+3. **CUDA version mismatch**: Check host CUDA version compatibility
 {%- endif %}
 
 ### Getting Help
 
-- Check the project README.md for detailed setup instructions
 - Review uv documentation: https://docs.astral.sh/uv/
-- Dev Containers docs: https://containers.dev/
-{%- if use_cuda %}
-- NVIDIA Docker docs: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/
-{%- endif %}
