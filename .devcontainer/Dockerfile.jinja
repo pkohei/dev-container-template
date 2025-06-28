@@ -34,8 +34,14 @@ RUN curl -fsSL https://deb.nodesource.com/setup_{{ nodejs_version }}.x | bash - 
     && apt-get install -y nodejs
 {%- endif %}
 
-# Install Claude Code CLI
+# Install Claude Code CLI globally as root
 RUN npm install -g @anthropic-ai/claude-code
+
+# Configure npm for vscode user
+RUN mkdir -p /home/vscode/.npm-global /home/vscode/.config && \
+    echo "prefix=/home/vscode/.npm-global" > /home/vscode/.npmrc && \
+    echo 'export PATH="/home/vscode/.npm-global/bin:$PATH"' >> /home/vscode/.bashrc && \
+    chown -R vscode:vscode /home/vscode/.npm-global /home/vscode/.npmrc /home/vscode/.bashrc
 
 # Create symlink for python
 RUN ln -sf /usr/bin/python3 /usr/bin/python
@@ -73,13 +79,19 @@ RUN curl -fsSL https://deb.nodesource.com/setup_{{ nodejs_version }}.x | bash - 
     && apt-get install -y nodejs
 {%- endif %}
 
-# Install Claude Code CLI
+# Install Claude Code CLI globally as root
 RUN npm install -g @anthropic-ai/claude-code
 {%- endif %}
 
 # Create a non-root user
 RUN useradd -m -s /bin/bash vscode && \
     echo "vscode ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# Configure npm for vscode user
+RUN mkdir -p /home/vscode/.npm-global /home/vscode/.config && \
+    echo "prefix=/home/vscode/.npm-global" > /home/vscode/.npmrc && \
+    echo 'export PATH="/home/vscode/.npm-global/bin:$PATH"' >> /home/vscode/.bashrc && \
+    chown -R vscode:vscode /home/vscode/.npm-global /home/vscode/.npmrc /home/vscode/.bashrc
 
 {%- if use_cuda %}
 # Set CUDA environment variables
