@@ -11,6 +11,7 @@ This project provides a development environment using DevContainer.
 - Docker
 - Visual Studio Code
 - Dev Containers extension
+- SSH agent running with keys loaded (for SSH functionality)
 {%- if use_cuda %}
 - NVIDIA Docker (nvidia-container-toolkit)
 - NVIDIA GPU drivers
@@ -79,6 +80,45 @@ This project's Docker setup is optimized following official uv recommendations:
 uv run python -m {{ project_name.replace('-', '_') }}.main
 ```
 
+
+### SSH Configuration and Git Access
+
+This project includes SSH agent forwarding for seamless Git operations with SSH keys.
+
+#### Setting up SSH Agent
+
+1. **Start SSH agent on your host machine:**
+   ```bash
+   # Start SSH agent (if not already running)
+   eval "$(ssh-agent -s)"
+   
+   # Add your SSH key
+   ssh-add ~/.ssh/id_rsa  # or your specific key file
+   
+   # Verify keys are loaded
+   ssh-add -l
+   ```
+
+2. **Verify SSH configuration in container:**
+   ```bash
+   # After opening in DevContainer, run the verification script
+   ./.devcontainer/ssh-setup.sh
+   ```
+
+3. **Using Git with SSH:**
+   ```bash
+   # Clone repositories using SSH URLs
+   git clone git@github.com:username/repository.git
+   
+   # Your SSH keys are automatically available
+   # No need to copy private keys into the container
+   ```
+
+#### Troubleshooting SSH
+
+- **SSH agent not found:** Ensure SSH agent is running on host and keys are loaded
+- **Permission denied:** Verify your SSH key is added to GitHub/GitLab/etc.
+- **Socket issues:** Restart Docker Desktop or Docker daemon
 
 ### Running Tests
 

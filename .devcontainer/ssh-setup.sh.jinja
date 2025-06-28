@@ -1,0 +1,67 @@
+#!/bin/bash
+# SSH Agent Setup and Verification Script for {{ project_name }}
+# This script helps verify SSH agent forwarding is working correctly
+
+set -e
+
+echo "🔐 SSH Agent Setup and Verification"
+echo "=================================="
+
+# Check if SSH agent is available
+if [ -z "$SSH_AUTH_SOCK" ]; then
+    echo "❌ SSH_AUTH_SOCK is not set"
+    echo "   SSH agent forwarding may not be configured properly"
+    echo "   Please ensure:"
+    echo "   1. SSH agent is running on your host machine"
+    echo "   2. You have SSH keys loaded in your agent"
+    echo "   3. The devcontainer is properly configured"
+    exit 1
+fi
+
+echo "✅ SSH_AUTH_SOCK is set: $SSH_AUTH_SOCK"
+
+# Check if SSH agent socket is accessible
+if [ ! -S "$SSH_AUTH_SOCK" ]; then
+    echo "❌ SSH agent socket is not accessible"
+    echo "   Socket path: $SSH_AUTH_SOCK"
+    echo "   This usually means SSH agent forwarding is not working"
+    exit 1
+fi
+
+echo "✅ SSH agent socket is accessible"
+
+# List available SSH keys
+echo ""
+echo "📋 Available SSH keys:"
+if ssh-add -l > /dev/null 2>&1; then
+    ssh-add -l
+    echo ""
+    echo "✅ SSH keys are loaded and available"
+else
+    echo "❌ No SSH keys are loaded in the agent"
+    echo "   Please add keys to your SSH agent on the host:"
+    echo "   ssh-add ~/.ssh/id_rsa  # or your key file"
+    exit 1
+fi
+
+# Test SSH connection (optional)
+echo ""
+read -p "🌐 Would you like to test SSH connection to GitHub? (y/N): " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo "Testing SSH connection to GitHub..."
+    if ssh -T git@github.com 2>&1 | grep -q "successfully authenticated"; then
+        echo "✅ SSH connection to GitHub is working!"
+    else
+        echo "⚠️  SSH connection test failed or you don't have GitHub access"
+        echo "   This might be normal if you don't have GitHub SSH access configured"
+    fi
+fi
+
+echo ""
+echo "🎉 SSH agent forwarding setup verification complete!"
+echo ""
+echo "💡 Tips:"
+echo "   - You can now use git with SSH URLs: git clone git@github.com:user/repo.git"
+echo "   - SSH keys from your host are automatically available"
+echo "   - No need to copy private keys into the container"

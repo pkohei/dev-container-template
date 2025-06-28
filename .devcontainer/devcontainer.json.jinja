@@ -55,7 +55,7 @@
     }
   },
   "forwardPorts": [],
-  "postCreateCommand": "echo 'Development environment ready! Run: uv sync'",
+  "postCreateCommand": "echo 'Development environment ready! Run: uv sync' && chmod +x .devcontainer/ssh-setup.sh && echo '🔐 SSH agent forwarding is configured. Run .devcontainer/ssh-setup.sh to verify.'",
   "remoteUser": "vscode",
   "workspaceFolder": "/workspace",
   "mounts": [
