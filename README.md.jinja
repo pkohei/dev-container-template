@@ -120,6 +120,45 @@ This project includes SSH agent forwarding for seamless Git operations with SSH 
 - **Permission denied:** Verify your SSH key is added to GitHub/GitLab/etc.
 - **Socket issues:** Restart Docker Desktop or Docker daemon
 
+### Claude Code Integration and Conversation History
+
+This project includes Claude Code CLI with persistent conversation history across container rebuilds.
+
+#### Features
+
+- **Persistent History**: Claude Code conversations are preserved using Docker volumes
+- **Cache Persistence**: uv cache is also preserved for faster dependency installation
+- **Automatic Setup**: Claude Code configuration directory is automatically configured
+
+#### Using Claude Code
+
+1. **Start Claude Code in the container:**
+   ```bash
+   # Claude Code CLI is already installed and ready to use
+   claude
+   ```
+
+2. **Conversation History Location:**
+   - History is stored in `/home/vscode/.claude` (mounted as Docker volume)
+   - Your conversations persist even when rebuilding the container
+   - No need to manually backup or restore chat history
+
+#### Volume Management
+
+The project uses Docker Compose with named volumes for persistence:
+
+```yaml
+volumes:
+  uv-cache:       # Preserves uv dependency cache
+  claude-data:    # Preserves Claude Code conversation history
+```
+
+#### Troubleshooting Claude Code
+
+- **Permission issues:** The container automatically sets proper permissions on startup
+- **Missing history:** Ensure you're using the same Docker Compose project name
+- **Reset history:** Remove the `claude-data` volume: `docker volume rm <project>_claude-data`
+
 ### Running Tests
 
 ```bash
